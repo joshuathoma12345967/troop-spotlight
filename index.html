@@ -18,14 +18,14 @@
                 transform: translateY(0);
             }
         }
-        .animate-fade-in-up {
+        .card-animate {
             animation: fadeInUp 0.6s ease-out forwards;
         }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans antialiased">
 
-    <header class="bg-blue-900 text-white py-12 text-center shadow-md transition-all duration-500 ease-in-out">
+    <header class="bg-blue-900 text-white py-12 text-center shadow-md">
         <h1 class="text-4xl md:text-5xl font-bold tracking-tight transform hover:scale-105 transition-transform duration-300 cursor-default">
             Troop Spotlight Hub
         </h1>
@@ -34,7 +34,7 @@
 
     <main class="max-w-6xl mx-auto px-4 py-12">
         <div id="spotlight-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <p class="text-center text-gray-500 col-span-full animate-pulse text-lg">Loading spotlights...</p>
+            <p class="text-center text-gray-500 col-span-full text-lg">Loading spotlights...</p>
         </div>
     </main>
 
@@ -52,9 +52,11 @@
                     const grid = document.getElementById('spotlight-grid');
                     grid.innerHTML = ''; // Clear loading text
 
-                    data.forEach((person, index) => {
+                    let validCardsCount = 0;
+
+                    data.forEach(person => {
                         // Skip empty rows or rows missing a name
-                        if (!person["Full Name"]) return; 
+                        if (!person["Full Name"] || person["Full Name"].trim() === "") return; 
 
                         // Smart fallback mapping for column keys
                         const category = person["Category"] || person["Category "] || "Scout";
@@ -69,14 +71,12 @@
                         // Create card element
                         const card = document.createElement('div');
                         
-                        // Added classes: 
-                        // - 'animate-fade-in-up' makes them slide up gracefully
-                        // - 'hover:-translate-y-2 hover:shadow-xl' adds the lifting hover effect
-                        // - 'transition-all duration-300' ensures everything animates smoothly
-                        card.className = "bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col transform transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl opacity-0 animate-fade-in-up";
+                        // Apply styling and hover effects
+                        card.className = "bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col transform transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl opacity-0 card-animate";
                         
-                        // Stagger the animation slightly for each card so they ripple in row-by-row
-                        card.style.animationDelay = `${index * 100}ms`;
+                        // Stagger animation timing using JavaScript numbers safely
+                        card.style.animationDelay = (validCardsCount * 100) + "ms";
+                        validCardsCount++;
                         
                         card.innerHTML = `
                             <div class="overflow-hidden h-56 w-full relative">
@@ -90,4 +90,27 @@
                                     <h2 class="text-2xl font-bold text-gray-800">${person["Full Name"]}</h2>
                                     <p class="text-sm font-medium text-gray-500 mt-1">${role} • <span class="italic">${rank}</span></p>
                                     
-                                    <div class="mt-4 border-t border-gray
+                                    <div class="mt-4 border-t border-gray-100 pt-4">
+                                        <p class="text-sm text-gray-600"><strong>Hobbies & Interests:</strong> ${hobbies}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+
+                    if (grid.innerHTML === '') {
+                        grid.innerHTML = `<p class="text-center text-gray-500 col-span-full">No active spotlights found in the database yet.</p>`;
+                    }
+                },
+                error: function(err) {
+                    console.error("Error parsing sheet:", err);
+                    document.getElementById('spotlight-grid').innerHTML = `<p class="text-red-500 col-span-full text-center">Failed to load troop profiles.</p>`;
+                }
+            });
+        }
+
+        window.onload = loadSpotlights;
+    </script>
+</body>
+</html>
