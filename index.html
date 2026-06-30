@@ -42,7 +42,7 @@
                         card.className = "bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col";
                         
                         // Default image if no photo URL is provided
-                       const photo = person["Photo of yourself"] || "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=400&q=80";
+                       const photo = person["Photo of yourself (Put URL)"] || "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=400&q=80";
                         
                         card.innerHTML = `
                             <img class="h-56 w-full object-cover" src="${photo}" alt="${person["Full Name"]}">
