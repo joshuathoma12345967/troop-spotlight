@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troop Spotlight Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+
+    <header class="bg-blue-900 text-white py-10 text-center shadow-md">
+        <h1 class="text-4xl font-bold tracking-tight">Troop Spotlight Hub</h1>
+        <p class="mt-2 text-blue-200">Celebrating our Scouts, Leaders, and Alumni</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-12">
+        <div id="spotlight-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <p class="text-center text-gray-500 col-span-full">Loading spotlights...</p>
+        </div>
+    </main>
+
+    <script>
+    
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/pub?gid=1931844735&single=true&output=csv";
+
+        function loadSpotlights() {
+            Papa.parse(SHEET_CSV_URL, {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    const data = results.data;
+                    const grid = document.getElementById('spotlight-grid');
+                    grid.innerHTML = ''; // Clear the loading text
+
+                    data.forEach(person => {
+                        // This checks your column header. Change "Full Name" if your form question is different.
+                        if (!person["Full Name"]) return; 
+
+                        // Generate HTML for an individual card
+                        const card = document.createElement('div');
+                        card.className = "bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col";
+                        
+                        // Default image if no photo URL is provided
+                        const photo = person["Photo URL"] || "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=400&q=80";
+
+                        card.innerHTML = `
+                            <img class="h-56 w-full object-cover" src="${photo}" alt="${person["Full Name"]}">
+                            <div class="p-6 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-blue-100 text-blue-800 rounded-full mb-2">
+                                        ${person["Category"]}
+                                    </span>
+                                    <h2 class="text-2xl font-bold text-gray-800">${person["Full Name"]}</h2>
+                                    <p class="text-sm font-medium text-gray-500 mt-1">${person["Role in Troop"]} • <span class="italic">${person["Scout Rank"]}</span></p>
+                                    
+                                    <div class="mt-4 border-t border-gray-100 pt-4">
+                                        <p class="text-sm text-gray-600"><strong>Hobbies & Interests:</strong> ${person["Hobbies and Interests"]}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                },
+                error: function(err) {
+                    console.error("Error parsing sheet:", err);
+                    document.getElementById('spotlight-grid').innerHTML = `<p class="text-red-500 col-span-full text-center">Failed to load troop profiles.</p>`;
+                }
+            });
+        }
+
+        // Run the script automatically on page load
+        window.onload = loadSpotlights;
+    </script>
+</body>
+</html>
