@@ -40,8 +40,8 @@
     </div>
 
     <script>
-        const BASE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/pub?gid=1931844735&single=true&output=csv";
-
+       // Cleaned up direct export endpoint to bypass browser security blocks
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/export?format=csv&gid=1931844735&t=" + new Date().getTime();
         // Curated scouting backgrounds
         const scoutImages = [
             "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=500&q=80",
