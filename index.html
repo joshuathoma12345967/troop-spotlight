@@ -43,6 +43,7 @@
     </div>
 
     <script>
+        // Clean URL without extra query parameter stacking to satisfy Safari security rules
         const SPREADSHEET_EXPORT_PATH = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/pub?gid=1931844735&single=true&output=csv";
 
         const scoutImages = [
@@ -60,11 +61,10 @@
                 return;
             }
 
-            const separator = SPREADSHEET_EXPORT_PATH.includes('?') ? '&' : '?';
-            const liveFetchUrl = SPREADSHEET_EXPORT_PATH + separator + "nocache=" + new Date().getTime();
             const grid = document.getElementById('spotlight-grid');
 
-            Papa.parse(liveFetchUrl, {
+            // Using pure URL to guarantee cross-browser compatibility
+            Papa.parse(SPREADSHEET_EXPORT_PATH, {
                 download: true,
                 header: true,
                 complete: function(results) {
@@ -76,26 +76,23 @@
                     const alumni = [];
 
                     data.forEach(row => {
-                        // Create a normalized object with lowercase, trimmed keys to prevent naming issues
                         const person = {};
                         Object.keys(row).forEach(key => {
                             const cleanKey = key.toLowerCase().trim();
                             person[cleanKey] = row[key];
                         });
 
-                        // Extract data gracefully using flexible property matches
                         const fullName = person["full name"] || person["name"] || "";
                         if (!fullName.trim()) return;
 
                         const categoryStr = (person["category"] || "").toLowerCase().trim();
                         
-                        // Packaging properties neatly
                         const cleanPerson = {
                             name: fullName,
-                            category: person["category"] || "Scout",
-                            rank: person["scout rank"] || person["rank"] || "N/A",
-                            role: person["role in troop"] || person["role"] || "Member",
-                            hobbies: person["hobbies and Interests"] || person["hobbies"] || "None specified"
+                            category: row["Category"] || row["Category "] || "Scout",
+                            rank: row["Scout Rank"] || row["Scout Rank "] || "N/A",
+                            role: row["Role in Troop"] || row["Role in Troop "] || "Member",
+                            hobbies: row["Hobbies and Interests"] || row["Hobbies and Interests "] || "None specified"
                         };
 
                         if (categoryStr.includes("scout") && !categoryStr.includes("leader")) {
@@ -105,7 +102,6 @@
                         } else if (categoryStr.includes("alumni") || categoryStr.includes("alumnus")) {
                             alumni.push(cleanPerson);
                         } else {
-                            // Default Fallback Array assignment
                             scouts.push(cleanPerson);
                         }
                     });
@@ -122,8 +118,7 @@
                         getRandomPerson(alumni)
                     ].filter(p => p !== null);
 
-                    // If categorization didn't yield anything, fill dynamically from total data pooled
-                    if (chosenThree.length === 0 && data.length > 0) {
+                    if (chosenThree.length === 0 && (scouts.length > 0 || leaders.length > 0 || alumni.length > 0)) {
                         const safetyPool = [...scouts, ...leaders, ...alumni];
                         for(let i = 0; i < 3 && safetyPool.length > 0; i++) {
                             const randIdx = Math.floor(Math.random() * safetyPool.length);
@@ -163,3 +158,19 @@
                             </div>
                         `;
                         grid.appendChild(card);
+                    });
+                },
+                error: function(err) {
+                    console.error("Data tracking failure:", err);
+                    document.getElementById('spotlight-grid').innerHTML = `<p class="text-red-500 col-span-full text-center font-medium">Failed to load troop profiles.</p>`;
+                }
+            });
+        }
+
+        window.onload = function() {
+            loadSpotlights();
+            setInterval(loadSpotlights, 5000);
+        };
+    </script>
+</body>
+</html>
