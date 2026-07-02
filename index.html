@@ -43,8 +43,8 @@
     </div>
 
     <script>
-        // Clean direct file download stream path mapping
-        const SPREADSHEET_EXPORT_PATH = "https://docs.google.com/spreadsheets/d/1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/export?format=csv&gid=1931844735";
+        // REPLACE THIS URL below if you get a fresh "Publish to Web" CSV link!
+        const SPREADSHEET_EXPORT_PATH = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/pub?gid=1931844735&single=true&output=csv";
 
         const scoutImages = [
             "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=500&q=80",
@@ -61,8 +61,9 @@
                 return;
             }
 
-            // Append live parameter token directly onto URL string 
-            const liveFetchUrl = SPREADSHEET_EXPORT_PATH + "&nocache=" + new Date().getTime();
+            // This tells the browser to always pull the freshest changes instead of using old cache
+            const separator = SPREADSHEET_EXPORT_PATH.includes('?') ? '&' : '?';
+            const liveFetchUrl = SPREADSHEET_EXPORT_PATH + separator + "nocache=" + new Date().getTime();
             const grid = document.getElementById('spotlight-grid');
 
             Papa.parse(liveFetchUrl, {
