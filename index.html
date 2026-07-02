@@ -43,8 +43,8 @@
     </div>
 
     <script>
-        // Formatted direct export url layout to avoid any 404 string mixups
-        const BASE_SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/export";
+        // Clean direct file download stream path mapping
+        const SPREADSHEET_EXPORT_PATH = "https://docs.google.com/spreadsheets/d/1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/export?format=csv&gid=1931844735";
 
         const scoutImages = [
             "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=500&q=80",
@@ -57,16 +57,15 @@
 
         function loadSpotlights() {
             if (typeof Papa === 'undefined') {
-                console.log("Waiting for data engine to load...");
-                setTimeout(loadSpotlights, 500);
+                setTimeout(loadSpotlights, 300);
                 return;
             }
 
-            // Correctly structuring parameters using standard URL structures (? first, then &)
-            const finalFetchUrl = BASE_SPREADSHEET_URL + "?format=csv&gid=1931844735&cachebreaker=" + new Date().getTime();
+            // Append live parameter token directly onto URL string 
+            const liveFetchUrl = SPREADSHEET_EXPORT_PATH + "&nocache=" + new Date().getTime();
             const grid = document.getElementById('spotlight-grid');
 
-            Papa.parse(finalFetchUrl, {
+            Papa.parse(liveFetchUrl, {
                 download: true,
                 header: true,
                 complete: function(results) {
@@ -143,8 +142,8 @@
                     });
                 },
                 error: function(err) {
-                    console.error("Error parsing sheet:", err);
-                    document.getElementById('spotlight-grid').innerHTML = `<p class="text-red-500 col-span-full text-center">Failed to load troop profiles.</p>`;
+                    console.error("Data tracking failure:", err);
+                    document.getElementById('spotlight-grid').innerHTML = `<p class="text-red-500 col-span-full text-center font-medium">Failed to load troop profiles.</p>`;
                 }
             });
         }
