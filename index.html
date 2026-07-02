@@ -32,18 +32,17 @@
             <h1 class="text-4xl md:text-5xl font-bold tracking-tight transform hover:scale-105 transition-transform duration-300 cursor-default">
                 Troop Spotlight Hub
             </h1>
-            <p class="mt-3 text-blue-200 text-lg opacity-90">Automatically rotating featured profiles every 5 seconds!</p>
+            <p class="mt-3 text-blue-200 text-lg opacity-90">Featuring Scouts, Leaders, and Alumni from Troop 73 White Plains</p>
         </header>
 
         <main class="max-w-6xl mx-auto px-4 py-12">
             <div id="spotlight-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <p class="text-center text-gray-500 col-span-full text-lg">Selecting random profiles...</p>
+                <p class="text-center text-gray-500 col-span-full text-lg animate-pulse">Selecting random profiles...</p>
             </div>
         </main>
     </div>
 
     <script>
-        // Clean URL without extra query parameter stacking to satisfy Safari security rules
         const SPREADSHEET_EXPORT_PATH = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/pub?gid=1931844735&single=true&output=csv";
 
         const scoutImages = [
@@ -55,7 +54,7 @@
             "https://images.unsplash.com/photo-1533240332313-0db49b459ad6?auto=format&fit=crop&w=500&q=80"
         ];
 
-        function loadSpotlights() {
+        async function loadSpotlights() {
             if (typeof Papa === 'undefined') {
                 setTimeout(loadSpotlights, 300);
                 return;
@@ -63,114 +62,21 @@
 
             const grid = document.getElementById('spotlight-grid');
 
-            // Using pure URL to guarantee cross-browser compatibility
-            Papa.parse(SPREADSHEET_EXPORT_PATH, {
-                download: true,
-                header: true,
-                complete: function(results) {
-                    const data = results.data;
-                    grid.innerHTML = ''; 
+            try {
+                const response = await fetch(SPREADSHEET_EXPORT_PATH);
+                if (!response.ok) throw new Error('Network file response was not clear.');
+                
+                const rawTextData = await response.text();
 
-                    const scouts = [];
-                    const leaders = [];
-                    const alumni = [];
+                Papa.parse(rawTextData, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        const data = results.data;
+                        grid.innerHTML = ''; 
 
-                    data.forEach(row => {
-                        const person = {};
-                        Object.keys(row).forEach(key => {
-                            const cleanKey = key.toLowerCase().trim();
-                            person[cleanKey] = row[key];
-                        });
+                        const scouts = [];
+                        const leaders = [];
+                        const alumni = [];
 
-                        const fullName = person["full name"] || person["name"] || "";
-                        if (!fullName.trim()) return;
-
-                        const categoryStr = (person["category"] || "").toLowerCase().trim();
-                        
-                        const cleanPerson = {
-                            name: fullName,
-                            category: row["Category"] || row["Category "] || "Scout",
-                            rank: row["Scout Rank"] || row["Scout Rank "] || "N/A",
-                            role: row["Role in Troop"] || row["Role in Troop "] || "Member",
-                            hobbies: row["Hobbies and Interests"] || row["Hobbies and Interests "] || "None specified"
-                        };
-
-                        if (categoryStr.includes("scout") && !categoryStr.includes("leader")) {
-                            scouts.push(cleanPerson);
-                        } else if (categoryStr.includes("leader") || categoryStr.includes("adult")) {
-                            leaders.push(cleanPerson);
-                        } else if (categoryStr.includes("alumni") || categoryStr.includes("alumnus")) {
-                            alumni.push(cleanPerson);
-                        } else {
-                            scouts.push(cleanPerson);
-                        }
-                    });
-
-                    function getRandomPerson(array) {
-                        if (array.length === 0) return null;
-                        const randomIndex = Math.floor(Math.random() * array.length);
-                        return array[randomIndex];
-                    }
-
-                    let chosenThree = [
-                        getRandomPerson(scouts),
-                        getRandomPerson(leaders),
-                        getRandomPerson(alumni)
-                    ].filter(p => p !== null);
-
-                    if (chosenThree.length === 0 && (scouts.length > 0 || leaders.length > 0 || alumni.length > 0)) {
-                        const safetyPool = [...scouts, ...leaders, ...alumni];
-                        for(let i = 0; i < 3 && safetyPool.length > 0; i++) {
-                            const randIdx = Math.floor(Math.random() * safetyPool.length);
-                            chosenThree.push(safetyPool.splice(randIdx, 1)[0]);
-                        }
-                    }
-
-                    if (chosenThree.length === 0) {
-                        grid.innerHTML = `<p class="text-center text-gray-500 col-span-full">No active spotlights found in the database yet.</p>`;
-                        return;
-                    }
-
-                    const shuffledImages = [...scoutImages].sort(() => 0.5 - Math.random());
-
-                    chosenThree.forEach((person, index) => {
-                        const photo = shuffledImages[index % shuffledImages.length];
-                        const card = document.createElement('div');
-                        card.className = "bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col transform transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl opacity-0 card-animate";
-                        card.style.animationDelay = (index * 150) + "ms";
-
-                        card.innerHTML = `
-                            <div class="overflow-hidden h-56 w-full relative">
-                                <img class="h-full w-full object-cover transform hover:scale-110 transition-transform duration-500 ease-in-out" src="${photo}" alt="Scouting Adventure Image">
-                            </div>
-                            <div class="p-6 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-blue-100 text-blue-800 rounded-full mb-2">
-                                        ${person.category}
-                                    </span>
-                                    <h2 class="text-2xl font-bold text-gray-800">${person.name}</h2>
-                                    <p class="text-sm font-medium text-gray-500 mt-1">${person.role} • <span class="italic">${person.rank}</span></p>
-                                    
-                                    <div class="mt-4 border-t border-gray-100 pt-4">
-                                        <p class="text-sm text-gray-600"><strong>Hobbies & Interests:</strong> ${person.hobbies}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        grid.appendChild(card);
-                    });
-                },
-                error: function(err) {
-                    console.error("Data tracking failure:", err);
-                    document.getElementById('spotlight-grid').innerHTML = `<p class="text-red-500 col-span-full text-center font-medium">Failed to load troop profiles.</p>`;
-                }
-            });
-        }
-
-        window.onload = function() {
-            loadSpotlights();
-            setInterval(loadSpotlights, 5000);
-        };
-    </script>
-</body>
-</html>
+                        data.forEach(row => {
