@@ -1,47 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Troop Spotlight Hub</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <style>
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .card-animate {
-            animation: fadeInUp 0.6s ease-out forwards;
-        }
-    </style>
-</head>
-<body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col justify-between">
+<script>
+        // Formatted direct export link to bypass security filters completely
+        const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/export?format=csv&gid=1931844735";
 
-    <div>
-        <header class="bg-blue-900 text-white py-12 text-center shadow-md">
-            <h1 class="text-4xl md:text-5xl font-bold tracking-tight transform hover:scale-105 transition-transform duration-300 cursor-default">
-                Troop Spotlight Hub
-            </h1>
-            <p class="mt-3 text-blue-200 text-lg opacity-90">Automatically rotating featured profiles every 5 seconds!</p>
-        </header>
-
-        <main class="max-w-6xl mx-auto px-4 py-12">
-            <div id="spotlight-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <p class="text-center text-gray-500 col-span-full text-lg">Selecting random profiles...</p>
-            </div>
-        </main>
-    </div>
-
-    <script>
-       // Cleaned up direct export endpoint to bypass browser security blocks
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/export?format=csv&gid=1931844735&t=" + new Date().getTime();
         // Curated scouting backgrounds
         const scoutImages = [
             "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=500&q=80",
@@ -53,11 +13,11 @@ const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1vTbOdzQtmthcOZukq
         ];
 
         function loadSpotlights() {
-            // Fetch live data with cache breaker
-            const SHEET_CSV_URL = BASE_URL + "&t=" + new Date().getTime();
+            // Appends the live timestamp directly onto the clean export URL
+            const finalFetchUrl = GOOGLE_SHEET_URL + "&t=" + new Date().getTime();
             const grid = document.getElementById('spotlight-grid');
 
-            Papa.parse(SHEET_CSV_URL, {
+            Papa.parse(finalFetchUrl, {
                 download: true,
                 header: true,
                 complete: function(results) {
@@ -125,4 +85,25 @@ const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1vTbOdzQtmthcOZukq
                                     <p class="text-sm font-medium text-gray-500 mt-1">${role} • <span class="italic">${rank}</span></p>
                                     
                                     <div class="mt-4 border-t border-gray-100 pt-4">
-                                        <p
+                                        <p class="text-sm text-gray-600"><strong>Hobbies & Interests:</strong> ${hobbies}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                },
+                error: function(err) {
+                    console.error("Error parsing sheet:", err);
+                    document.getElementById('spotlight-grid').innerHTML = `<p class="text-red-500 col-span-full text-center">Failed to load troop profiles.</p>`;
+                }
+            });
+        }
+
+        window.onload = function() {
+            loadSpotlights();
+            setInterval(loadSpotlights, 5000);
+        };
+    </script>
+</body>
+</html>
