@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Troop Spotlight Hub</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.0.0-beta.8/dist/index.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
@@ -43,7 +43,8 @@
     </div>
 
     <script>
-        const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/export?format=csv&gid=1931844735";
+        // Formatted direct export url layout to avoid any 404 string mixups
+        const BASE_SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1vTbOdzQtmthcOZukqGIjJtz25LKwLURVkzhhnDMUKdK8t2WrVQRuVz_VFva7KkN9CECEONxCDkbwfBO/export";
 
         const scoutImages = [
             "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=500&q=80",
@@ -55,14 +56,14 @@
         ];
 
         function loadSpotlights() {
-            // Safety check: if Papa isn't loaded yet, wait a moment and try again
             if (typeof Papa === 'undefined') {
                 console.log("Waiting for data engine to load...");
                 setTimeout(loadSpotlights, 500);
                 return;
             }
 
-            const finalFetchUrl = GOOGLE_SHEET_URL + "&t=" + new Date().getTime();
+            // Correctly structuring parameters using standard URL structures (? first, then &)
+            const finalFetchUrl = BASE_SPREADSHEET_URL + "?format=csv&gid=1931844735&cachebreaker=" + new Date().getTime();
             const grid = document.getElementById('spotlight-grid');
 
             Papa.parse(finalFetchUrl, {
